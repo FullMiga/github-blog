@@ -30,7 +30,8 @@ interface PostListInterface {
 }
 
 interface CompletePostInterace {
-  id: number
+  number: number;
+  id: number;
   html_url: string,
   title: string,
   body: string;
@@ -47,7 +48,7 @@ interface BlogContextType {
   post: CompletePostInterace | undefined;
 
   fechPosts: (query?: string) => void;
-  fetchPostContent: (number: number, id: number) => void;
+  fetchPostContent: (number: number) => void;
 }
 
 export const BlogContext = createContext({} as BlogContextType);
@@ -56,7 +57,7 @@ export function BlogContextProvider({ children }: BlogContextProviderProps) {
   const [postList, setPostList] = useState<PostListInterface>();
   const [blogProfileInfo, setBlogProfileInfo] = useState<BlogProfileInfo>();
   const [post, setPost] = useState<CompletePostInterace>();
-
+  
   async function fechProfileInfo() {
     const response = await api.get('/users/tailwindlabs');
 
@@ -75,11 +76,11 @@ export function BlogContextProvider({ children }: BlogContextProviderProps) {
     setPostList(response.data)
   }
 
-  async function fetchPostContent(number: number, id: number) {
-    if (post?.id === id) {
-      return post;
+  async function fetchPostContent(number: number) {
+    if (post?.number === number) {
+      return;
     }   
-
+    
     const response = await api.get(`repos/tailwindlabs/tailwindcss/issues/${number}`);
     const stateJSON = JSON.stringify(response.data);
 
@@ -91,8 +92,7 @@ export function BlogContextProvider({ children }: BlogContextProviderProps) {
     fechProfileInfo()
     fechPosts()
 
-    const storedPostContent= localStorage.getItem('@github-blog:post-state-1.0.0');
-
+    const storedPostContent = localStorage.getItem('@github-blog:post-state-1.0.0');
     if(storedPostContent) {
       setPost(JSON.parse(storedPostContent))
     }

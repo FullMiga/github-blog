@@ -1,25 +1,20 @@
-import { NavLink } from "react-router";
+import { useContext, useEffect } from "react";
+import { NavLink, useParams } from "react-router";
 import { CodeBlock, PostContainer, PostContentContainer, PostInfo, PostInfoContainer, PostNavigation, PostTitle } from "./styles";
 import { nightOwl } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare, faCalendarDay, faChevronLeft, faComment } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { useContext } from "react";
 import { BlogContext } from "../../contexts/BlogContext";
 import { formatDistanceToNow } from 'date-fns';
 import ReactMarkdown from "react-markdown";
 
 export function Post() {
-  const { post } = useContext(BlogContext);
+  const { post, fetchPostContent } = useContext(BlogContext);
+  const { postNumber } = useParams();
+
+  const formattedDate = post?.created_at ? formatDistanceToNow(post.created_at, { addSuffix: true, }) : null;
   
-  let formattedDate;
-
-  if (post?.created_at) {
-    formattedDate = formatDistanceToNow(post.created_at, {
-      addSuffix: true,
-    })
-  }
-
   const githubBlogStyle = {
     ...nightOwl,
     keyword: {
@@ -44,6 +39,25 @@ export function Post() {
       color: "#D5DCE3"
     }
   }
+
+  useEffect(() => {
+    const urlParams = Number(postNumber);
+    const storedPostContent = localStorage.getItem('@github-blog:post-state-1.0.0');
+
+    if(storedPostContent) {
+      const oldPostContent = JSON.parse(storedPostContent);
+
+      if(urlParams !== oldPostContent.number) {
+        fetchPostContent(urlParams);
+        return;
+      }
+    }
+
+    if (!storedPostContent) {
+      fetchPostContent(urlParams);
+    }
+    
+  }, [postNumber, fetchPostContent])
   
   return(
     <PostContainer>
